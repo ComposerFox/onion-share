@@ -81,8 +81,8 @@ app.get('/', (req, res) => {
 });
 
 // WebSocket 연결을 처리할 HTTP 서버와 연결
-app.server = app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+app.server = app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${port}`);
 });
 
 app.server.on('upgrade', (request, socket, head) => {
