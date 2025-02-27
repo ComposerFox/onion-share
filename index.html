@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnionShare - File & Chat</title>
+    <script>
+        async function createRoom() {
+            const roomName = document.getElementById("roomName").value;
+            const password = document.getElementById("password").value;
+            const response = await fetch("/create-room", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ roomName, password })
+            });
+            const result = await response.json();
+            document.getElementById("roomList").innerHTML += `
+                <li>
+                    <a href="${result.onionLink}" target="_blank">${result.roomName} - ${result.onionLink}</a>
+                    <button onclick="deleteRoom('${result.roomName}')">Delete</button>
+                </li>
+            `;
+        }
+
+        async function deleteRoom(roomName) {
+            await fetch("/delete-room", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ roomName })
+            });
+            document.getElementById("roomList").innerHTML = '';
+        }
+
+        async function joinRoom() {
+            const roomName = document.getElementById("joinRoomName").value;
+            const password = document.getElementById("joinPassword").value;
+            const response = await fetch("/join-room", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ roomName, password })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.href = result.onionLink;  // 방으로 이동
+            } else {
+                alert("Incorrect room name or password.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>OnionShare</h1>
+
+    <h2>Create a Room</h2>
+    <input type="text" id="roomName" placeholder="Enter Room Name">
+    <input type="password" id="password" placeholder="Set a Password">
+    <button onclick="createRoom()">Create Room</button>
+
+    <h2>Join a Room</h2>
+    <input type="text" id="joinRoomName" placeholder="Enter Room Name">
+    <input type="password" id="joinPassword" placeholder="Enter Password">
+    <button onclick="joinRoom()">Join Room</button>
+
+    <h2>Available Rooms</h2>
+    <ul id="roomList"></ul>
+</body>
+</html>
