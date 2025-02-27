@@ -3,6 +3,7 @@ const multer = require('multer');
 const WebSocket = require('ws');
 const { exec } = require('child_process');
 const bodyParser = require('body-parser');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 require('dotenv').config();
 const fs = require('fs');
 
@@ -15,6 +16,13 @@ const rooms = {}; // 방 정보 저장
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public')); // 정적 파일 서빙
+
+// ✅ Flask WebSocket 프록시 추가
+app.use('/ws', createProxyMiddleware({
+    target: 'http://127.0.0.1:5000', // Flask WebSocket 서버
+    changeOrigin: true,
+    ws: true
+}));
 
 // 파일 업로드 설정
 const storage = multer.diskStorage({
