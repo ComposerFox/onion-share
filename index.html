@@ -34,17 +34,34 @@
         async function joinRoom() {
             const roomName = document.getElementById("joinRoomName").value;
             const password = document.getElementById("joinPassword").value;
-            const response = await fetch("/join-room", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ roomName, password })
-            });
-            const result = await response.json();
 
-            if (result.success) {
-                window.location.href = result.onionLink;  // 방으로 이동
-            } else {
-                alert("Incorrect room name or password.");
+            try {
+                const response = await fetch("/join-room", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ roomName, password })
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    throw new Error(errorMessage);
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    const socket = new WebSocket(result.websocketUrl); // 동적 WebSocket 주소 사용
+
+                    socket.onopen = () => console.log("WebSocket connected!");
+                    socket.onmessage = (event) => console.log("Message from server:", event.data);
+                    socket.onerror = (error) => console.error("WebSocket Error:", error);
+                    socket.onclose = () => console.log("WebSocket disconnected");
+
+                    window.location.href = result.onionLink;
+                } else {
+                    alert("Incorrect room name or password.");
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
             }
         }
     </script>
